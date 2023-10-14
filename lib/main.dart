@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:response/disaster_page.dart';
 import 'package:response/login_page.dart';
 import 'home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         '/registration': (context) => const RegistrationPage(),
         '/login': (context) => const LoginPage(),
         '/home': (context) => const HomePage(),
+        '/disaster': (context) => const DisasterPage()
       },
     );
   }

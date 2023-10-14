@@ -1,10 +1,10 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
-import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
-import 'auth_service.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:flutter_sms/flutter_sms.dart';
+import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
+import 'package:response/disaster_page.dart';
+import 'package:response/emergency_services.dart';
+import 'auth_service.dart';
 
 class EmergencyService {
   const EmergencyService({
@@ -26,7 +26,8 @@ class EmergencyServiceButton extends StatelessWidget {
     required this.number,
   }) : super(key: key);
 
-  Future<void> _callEmergencyService(BuildContext context, String phoneNumber) async {
+  Future<void> _callEmergencyService(
+      BuildContext context, String phoneNumber) async {
     try {
       await FlutterPhoneDirectCaller.callNumber(phoneNumber);
 
@@ -37,14 +38,16 @@ class EmergencyServiceButton extends StatelessWidget {
         final CustomUser? user = await authService.getCurrentUser();
 
         if (user != null) {
+          // ignore: unused_local_variable
           final Position position = await Geolocator.getCurrentPosition(
             desiredAccuracy: LocationAccuracy.high,
           );
 
+          // ignore: unused_local_variable
           final message =
               '📋 Copy to Clipboard: Emergency! Name: ${user.displayName}, Phone: ${user.phoneNumber}, Blood Group: ${user.bloodGroup}, Location: ${position.latitude}, ${position.longitude}';
 
-          await sendEmergencySMS(message, number); // Corrected function call
+          // You removed the SMS functionality here
         }
       }
     } catch (e) {
@@ -83,20 +86,6 @@ class EmergencyServiceButton extends StatelessWidget {
         ],
       ),
     );
-  }
-}
-
-Future<void> sendEmergencySMS(String message, String recipient) async {
-  try {
-    List<String> recipients = [recipient];
-    await FlutterSms.sendSMS(
-      message: message,
-      recipients: recipients,
-    );
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error sending SMS: $e');
-    }
   }
 }
 
@@ -174,7 +163,7 @@ class HomePage extends StatelessWidget {
             child: Text('Tab 2 Content'),
           ),
           const Center(
-            child: Text('Tab 3 Content'),
+            child: DisasterPage(),
           ),
           Center(
             child: EmergencyServicesPage(),
@@ -190,7 +179,7 @@ class HomePage extends StatelessWidget {
             icon: const Icon(Icons.business),
           ),
           PersistentBottomNavBarItem(
-            title: 'Tab 3',
+            title: 'Disaster Page',
             icon: const Icon(Icons.school),
           ),
           PersistentBottomNavBarItem(
