@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:persistent_bottom_nav_bar/persistent_tab_view.dart';
-import 'package:response/disaster_page.dart';
-import 'package:response/emergency_services.dart';
+import 'package:geolocator/geolocator.dart';
+import 'disaster_page.dart';
+import 'emergency_services.dart';
+import 'weather_page.dart';
 import 'auth_service.dart';
+import 'package:twilio_flutter/twilio_flutter.dart'; // Import Twilio package
 
 class EmergencyService {
   const EmergencyService({
@@ -19,11 +21,13 @@ class EmergencyService {
 class EmergencyServiceButton extends StatelessWidget {
   final String text;
   final String number;
+  final CustomUser? user;
 
   const EmergencyServiceButton({
     Key? key,
     required this.text,
     required this.number,
+    this.user,
   }) : super(key: key);
 
   Future<void> _callEmergencyService(
@@ -34,21 +38,26 @@ class EmergencyServiceButton extends StatelessWidget {
       final AuthService authService = AuthService();
       final isUserLoggedIn = await authService.isUserLoggedIn();
 
-      if (isUserLoggedIn == true) {
-        final CustomUser? user = await authService.getCurrentUser();
+      if (isUserLoggedIn == true && user != null) {
+        final Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        );
 
-        if (user != null) {
-          // ignore: unused_local_variable
-          final Position position = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.high,
-          );
+        final message =
+            '📋 Copy to Clipboard: Emergency! Name: ${user?.displayName}, Phone: ${user?.phoneNumber}, Blood Group: ${user?.bloodGroup}, Location: ${position.latitude}, ${position.longitude}';
 
-          // ignore: unused_local_variable
-          final message =
-              '📋 Copy to Clipboard: Emergency! Name: ${user.displayName}, Phone: ${user.phoneNumber}, Blood Group: ${user.bloodGroup}, Location: ${position.latitude}, ${position.longitude}';
+        // Initialize TwilioFlutter
+        TwilioFlutter twilioFlutter = TwilioFlutter(
+          accountSid: 'AC1298ffc7af7a572d4c004c2bc6197393',
+          authToken: '496efe0e2d698653d5179c873871902c',
+          twilioNumber: '+12565026068',
+        );
 
-          // You removed the SMS functionality here
-        }
+        // Send the message using TwilioFlutter
+        await twilioFlutter.sendSMS(
+          toNumber: phoneNumber, // Use the same number the user is calling
+          messageBody: message, // Use the same message as the body
+        );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -66,20 +75,20 @@ class EmergencyServiceButton extends StatelessWidget {
         await _callEmergencyService(context, number);
       },
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color.fromARGB(255, 76, 255, 225),
-        padding: const EdgeInsets.all(16),
+        foregroundColor: Colors.black, backgroundColor: const Color(0xFF4CFFE1),
+        padding: const EdgeInsets.all(12), // Reduce padding to make it smaller
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
         ),
       ),
       child: Column(
         children: [
-          const Icon(Icons.phone, size: 32),
-          const SizedBox(height: 8),
+          const Icon(Icons.phone, size: 28), // Reduce icon size
+          const SizedBox(height: 4), // Reduce spacing between icon and text
           Text(
             text,
             style: const TextStyle(
-              fontSize: 18,
+              fontSize: 16, // Reduce font size
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -98,6 +107,7 @@ class HomePage extends StatelessWidget {
     EmergencyService(name: 'Ambulance', phoneNumber: '108'),
     EmergencyService(name: 'Women Helpline', phoneNumber: '1091'),
     EmergencyService(name: 'Child Helpline', phoneNumber: '7977227633'),
+    EmergencyService(name: 'ERSS (112)', phoneNumber: '112'),
   ];
 
   @override
@@ -160,7 +170,7 @@ class HomePage extends StatelessWidget {
             ),
           ),
           const Center(
-            child: Text('Tab 2 Content'),
+            child: WeatherPage(),
           ),
           const Center(
             child: DisasterPage(),
@@ -175,7 +185,7 @@ class HomePage extends StatelessWidget {
             icon: const Icon(Icons.call_end),
           ),
           PersistentBottomNavBarItem(
-            title: 'Tab 2',
+            title: 'Weather Forecast',
             icon: const Icon(Icons.business),
           ),
           PersistentBottomNavBarItem(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:response/disaster_page.dart';
 import 'package:response/login_page.dart';
+import 'package:response/weather_page.dart';
+import 'package:twilio_flutter/twilio_flutter.dart';
 import 'home_page.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -9,11 +11,18 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPre
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  runApp(await MyApp.initialize()); // Use a static method to initialize the app
+  runApp(await MyApp.initialize());
+  // ignore: unused_local_variable
+  TwilioFlutter twilioFlutter = TwilioFlutter(
+      accountSid: 'AC1298ffc7af7a572d4c004c2bc6197393',
+      authToken: '496efe0e2d698653d5179c873871902c',
+      twilioNumber:
+          '+12565026068'); // Use a static method to initialize the app
 }
 
 class MyApp extends StatelessWidget {
@@ -40,7 +49,8 @@ class MyApp extends StatelessWidget {
         '/registration': (context) => const RegistrationPage(),
         '/login': (context) => const LoginPage(),
         '/home': (context) => const HomePage(),
-        '/disaster': (context) => const DisasterPage()
+        '/disaster': (context) => const DisasterPage(),
+        '/weather': (context) => const WeatherPage(),
       },
     );
   }

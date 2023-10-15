@@ -133,18 +133,36 @@ class EmergencyServiceWebView extends StatelessWidget {
       appBar: AppBar(
         title: Text(pageTitle),
       ),
-      body: WebView(
-        initialUrl: initialUrl,
-        javascriptMode: JavascriptMode.unrestricted,
-        navigationDelegate: (NavigationRequest request) {
-          if (request.url == initialUrl) {
-            return NavigationDecision.navigate;
+      body: FutureBuilder<void>(
+        future: loadWebView(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.done) {
+            // Web page has finished loading
+            return WebView(
+              initialUrl: initialUrl,
+              javascriptMode: JavascriptMode.unrestricted,
+              navigationDelegate: (NavigationRequest request) {
+                if (request.url == initialUrl) {
+                  return NavigationDecision.navigate;
+                } else {
+                  return NavigationDecision.prevent;
+                }
+              },
+            );
           } else {
-            return NavigationDecision.prevent;
+            // Show a loading indicator while the web page is loading
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
         },
       ),
     );
+  }
+
+  Future<void> loadWebView() async {
+    // Simulate some delay before the web page is fully loaded
+    await Future.delayed(const Duration(seconds: 2));
   }
 }
 
